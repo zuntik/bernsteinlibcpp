@@ -18,45 +18,51 @@ double basis(int k, int n, double tau) {
 /* Returns a matrix for degree elevation */
 Eigen::MatrixXf degrelevmat(int n, int m) {
 	Eigen::MatrixXf mat(m+1, n+1);
-	for (int i = 0; i < n+1; i++) {
-		for (int j = 0; i < m+1; j++) {
-			mat(i, j) = (std::max(0, i - m + n) <= j <= std::min(n, i) + 1)? comb<double>(i, j) * comb<double>(m-i, n-j): 0;
+	for (int i = 0; i < m+1; i++) {
+		for (int j = 0; j < n+1; j++) {
+			mat(i, j) = (std::max(0, i - m + n) <= j and j <= std::min(n, i))? comb<double>(i, j) * comb<double>(m-i, n-j)/comb<double>(m, n): 0;
 		}
 	}
 	return mat;
 }
 
 
-#if 0
-
-degrelevmat(n, m):
-    """Returns a matrix for degree elevation"""
-    return np.array([[comb(i, j) * comb(m - i, n - j) if max(0, i - m + n) <= j <= min(n, i) + 1 else 0
-                      for j in range(n + 1)] for i in range(m+1)]) / comb(m, n)
-#endif
-
-
-#if 0
-
 /*Returns an integral/antiderivative matrix
  *Returns an integral/antiderivative matrix that must be multiplied by a column vector
  *to obtain the control points of the integral function"""
  */
-double antiderivmat(n, t) {
-    return np.tril(np.ones((n + 2, n + 1)) * t / (n + 1), -1)
+Eigen::MatrixXf antiderivmat(int n, double t) {
+	Eigen::MatrixXf mat(n+2, n+1);
+	double val = t/(n+1);
+	for(int i=0; i<n+2; i++) {
+		for(int j=0; j<n+1; j++) {
+			mat(i, j) = (i > j)? val: 0;
+		}
+	}
+	return mat;
+}
+
+/*Returns the control points of the integral function of for the control points of p*/
+Eigen::MatrixXf antideriv(Eigen::MatrixXf p, double t, Eigen::MatrixXf p0) {
+	std::cout <<"p0.replicate(p.rows(),1): " << p0.replicate(p.rows()+1,1);
+	std::cout <<"\nantiderivmat(p.rows()-1, t): " << antiderivmat(p.rows()-1, t);
+	std::cout <<"\np: " << p << std::endl;
+	return p0.replicate(p.rows()+1,1) + antiderivmat(p.rows()-1, t) * p;
 }
 
 
-double antideriv(p, t, p0) {
-    """Returns the control points of the integral function of for the control points of p"""
-    return p0 + antiderivmat(p.shape[0] - 1, t) @ p
+/*Performs degree elevation*/
+Eigen::MatrixXf degrelev(Eigen::MatrixXf p, int m) {
+	return (p.rows() -1 > m)? p : degrelevmat(p.rows() -1, m)*p;
 }
 
 
-def degrelev(p, m):
-    """Performs degree elevation"""
-    return p if p.shape[0] - 1 > m else degrelevmat(p.shape[0] - 1, m) @ p
+/*Returns a matrix to perform derivation*/
+Eigen::MatrixXf derivmat(int n, double t) {
+	Eigen::MatrixXf mat;
+}
 
+#if 0
 
 def derivmat(n, t):
     """Returns a matrix to perform derivation"""
@@ -136,7 +142,19 @@ def tomon(p, t):
 
 int main()
 {
-	sum();
-	std::cout << std::pow(3,2) << std::endl;
+	Eigen::MatrixXf p(5, 1);
+	p << 2, 4, -1, 2, 5;
+	double T = 3;
+	std::cout << "test the bernstein basis.\n";
 	std::cout << basis(2,5,0.7) << std::endl;
+	std::cout << "test the degree elevation matrix\n";
+	std::cout << degrelevmat(3,7) << std::endl;
+	std::cout << "test the anti derivative matrix\n";
+	std::cout << antiderivmat(3, 6) << std::endl;
+	std::cout << "test the antiderivative\n";
+	Eigen::MatrixXf p0(1,1);
+	p0 << 0;
+	std::cout << antideriv(p, T, p0);
+	std::cout << "test degree elevation\n";
+	std::cout << degrelev(p, 8);
 }
