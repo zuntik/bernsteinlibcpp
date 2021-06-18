@@ -1,0 +1,4 @@
+#ifndef BERNSTEINLIB_TEST_H
+#define BERNSTEINLIB_TEST_H
+
+#endif
