@@ -1,6 +1,4 @@
-#ifndef BERNSTEINLIB_H
-#define BERNSTEINLIB_H
-
+#pragma once
 
 namespace BernsteinLib {
 
@@ -21,5 +19,3 @@ namespace BernsteinLib {
 	Eigen::MatrixXf tomonmat(Eigen::MatrixXf n, double t);
 
 };
-
-#endif
